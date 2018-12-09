@@ -56,5 +56,3 @@ const coords = input.split("\n").map(line => {
 });
 
 calculate(coords);
-
-// 39040 too low
