@@ -1,5 +1,3 @@
-const R = require('ramda');
-
 function insertToMarbles(marbles, marble, current) {
   const newIndex = (current + 2) % (marbles.length);
 
@@ -18,7 +16,7 @@ function getIndex7CCW(marbles, current) {
   return indexOfScore < 0 ? marbles.length - Math.abs(indexOfScore) : indexOfScore;
 }
 
-const calculate = () => {
+const calculateSlow = () => {
   let marbles = [0];
   let current = 0;
   let turn = 1;
@@ -43,12 +41,65 @@ const calculate = () => {
 
   console.log({players})
   console.log(Math.max(...players));
-
-  // console.log(players)
 };
 
-//[7] 0 16  8 17  4 18 19  2 24 20(25)10 21  5 22 11  1 12  6 13  3 14  7 15
-calculate();
+class Node {
+  constructor(marble) {
+    this.marble = marble;
+  }
 
-// 0 1 2 3 4 5
-//
+  insert(marble) {
+    const oldNext = this.next;
+    const newMarble = new Node(marble);
+    this.next = newMarble;
+
+    if (this.prev === this) {
+      this.prev = newMarble;
+    }
+
+    this.next.next = oldNext;
+    this.next.prev = this;
+    this.next.next.prev = newMarble;
+    return newMarble;
+  }
+
+  remove() {
+    const oldNext = this.next;
+    const oldPrev = this.prev;
+    this.prev.next = oldNext;
+    this.next.prev = oldPrev;
+  }
+}
+
+const calculate = () => {
+  let first = new Node(0);
+  first.next = first;
+  first.prev = first;
+
+  let current = first;
+  let turn = 1;
+  let players = [];
+  for (let i = 0; i < 424; i++) {
+    players[i] = 0;
+  }
+
+  while (turn < (71482 * 100)) {
+    if (turn % 23 === 0) {
+      const seventhMarbleBefore = current.prev.prev.prev.prev.prev.prev.prev;
+      players[turn % players.length] += turn + seventhMarbleBefore.marble;
+
+      current = seventhMarbleBefore.next;
+      seventhMarbleBefore.remove();
+    } else {
+      current = current.next.insert(turn);
+    }
+    turn++;
+  }
+
+
+  console.log("***********")
+  console.log({players})
+  console.log(Math.max(...players));
+
+};
+calculate();
